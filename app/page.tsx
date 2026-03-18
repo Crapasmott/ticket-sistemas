@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Search, Download, LogOut, User, Calendar,
-  Laptop, CheckCircle, Building2, Monitor, Cpu,
+  Laptop, CheckCircle, Building2, Monitor, Cpu, UserPlus, X, Pencil,
 } from 'lucide-react';
 
 // ── CONSTANTES ───────────────────────────────────────────────────────────────
@@ -13,6 +13,9 @@ const EDIFICIOS = [
   'Edificio Zona Rural', 'Subestacion Electrica', 'Oficinas Administrativas',
   'Almacen General', 'Taller de Mantenimiento', 'Centro de Control', 'Otro',
 ];
+
+const TIPOS_EQUIPO_OPCIONES = ['ESCRITORIO', 'PORTATIL', 'AMBOS'];
+const CARGOS_OPCIONES = ['Planta', 'DIRECTIVO', 'Mision', 'Contratista', 'Funcionario', 'Jefe'];
 
 // ── TIPOS ────────────────────────────────────────────────────────────────────
 type Tecnico = { id: number; nombre: string; usuario: string; role: string };
@@ -54,6 +57,284 @@ const makeForm = (): FormData => ({
   observaciones: '',
   componentes: makeComponentes(),
 });
+
+// ── FORMULARIO NUEVO EMPLEADO ─────────────────────────────────────────────────
+interface NuevoEmpleadoForm {
+  nombre: string;
+  cargo: string;
+  dependencia: string;
+  equipo: string;
+  ip: string;
+  tipo: string;
+  serial: string;
+}
+
+function NuevoEmpleadoModal({
+  searchTerm,
+  onGuardar,
+  onCancelar,
+  loading,
+}: {
+  searchTerm: string;
+  onGuardar: (data: NuevoEmpleadoForm) => void;
+  onCancelar: () => void;
+  loading: boolean;
+}) {
+  const [form, setForm] = useState<NuevoEmpleadoForm>({
+    nombre: searchTerm,
+    cargo: 'Planta',
+    dependencia: '',
+    equipo: '',
+    ip: '',
+    tipo: 'ESCRITORIO',
+    serial: '',
+  });
+
+  const set = (k: keyof NuevoEmpleadoForm, v: string) =>
+    setForm(prev => ({ ...prev, [k]: v }));
+
+  const handleSubmit = () => {
+    if (!form.nombre.trim()) { alert('El nombre es obligatorio'); return; }
+    if (!form.dependencia.trim()) { alert('La dependencia es obligatoria'); return; }
+    onGuardar(form);
+  };
+
+  return (
+    <div className="mt-3 border-2 border-indigo-200 bg-indigo-50 rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2">
+          <UserPlus className="w-4 h-4 text-indigo-600" />
+          <p className="text-sm font-bold text-indigo-700">Registrar nuevo empleado</p>
+        </div>
+        <button
+          type="button"
+          onClick={onCancelar}
+          className="text-slate-400 hover:text-slate-600 transition"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Nombre */}
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">
+            Nombre completo *
+          </label>
+          <input
+            type="text"
+            value={form.nombre}
+            onChange={e => set('nombre', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-indigo-400 outline-none bg-white"
+            placeholder="Nombre y apellidos"
+          />
+        </div>
+
+        {/* Cargo */}
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">
+            Cargo / Contrato
+          </label>
+          <select
+            value={form.cargo}
+            onChange={e => set('cargo', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-indigo-400 outline-none bg-white"
+          >
+            {CARGOS_OPCIONES.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Dependencia */}
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">
+            Dependencia *
+          </label>
+          <input
+            type="text"
+            value={form.dependencia}
+            onChange={e => set('dependencia', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-indigo-400 outline-none bg-white"
+            placeholder="Ej: PLANEACIÓN"
+          />
+        </div>
+
+        {/* Equipo */}
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">
+            Nombre equipo
+          </label>
+          <input
+            type="text"
+            value={form.equipo}
+            onChange={e => set('equipo', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-indigo-400 outline-none bg-white"
+            placeholder="Ej: 1BP2OJ-001"
+          />
+        </div>
+
+        {/* Tipo equipo */}
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">
+            Tipo de equipo
+          </label>
+          <select
+            value={form.tipo}
+            onChange={e => set('tipo', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-indigo-400 outline-none bg-white"
+          >
+            {TIPOS_EQUIPO_OPCIONES.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* IP */}
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">
+            IP
+          </label>
+          <input
+            type="text"
+            value={form.ip}
+            onChange={e => set('ip', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-indigo-400 outline-none bg-white"
+            placeholder="Ej: 172.16.2.10"
+          />
+        </div>
+
+        {/* Serial */}
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">
+            Serial
+          </label>
+          <input
+            type="text"
+            value={form.serial}
+            onChange={e => set('serial', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-indigo-400 outline-none bg-white"
+            placeholder="Serial del equipo"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 pt-1">
+        <button
+          type="button"
+          onClick={onCancelar}
+          className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 font-medium rounded-lg hover:bg-slate-100 transition"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
+        >
+          <UserPlus className="w-4 h-4" />
+          {loading ? 'Guardando...' : 'Guardar y seleccionar'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── EDITAR EMPLEADO ───────────────────────────────────────────────────────────
+function EditarEmpleadoModal({
+  empleado,
+  onGuardar,
+  onCancelar,
+  loading,
+}: {
+  empleado: Empleado;
+  onGuardar: (data: Empleado) => void;
+  onCancelar: () => void;
+  loading: boolean;
+}) {
+  const [form, setForm] = useState<Empleado>({ ...empleado });
+  const set = (k: keyof Empleado, v: string) =>
+    setForm(prev => ({ ...prev, [k]: v }));
+
+  const handleSubmit = () => {
+    if (!form.nombre.trim()) { alert('El nombre es obligatorio'); return; }
+    if (!form.dependencia.trim()) { alert('La dependencia es obligatoria'); return; }
+    onGuardar(form);
+  };
+
+  return (
+    <div className="mt-3 border-2 border-amber-200 bg-amber-50 rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2">
+          <Pencil className="w-4 h-4 text-amber-600" />
+          <p className="text-sm font-bold text-amber-700">Editar datos del empleado</p>
+        </div>
+        <button type="button" onClick={onCancelar} className="text-slate-400 hover:text-slate-600 transition">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">Nombre completo *</label>
+          <input type="text" value={form.nombre} onChange={e => set('nombre', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-amber-400 outline-none bg-white" />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">Cargo / Contrato</label>
+          <select value={form.cargo} onChange={e => set('cargo', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-amber-400 outline-none bg-white">
+            {CARGOS_OPCIONES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">Dependencia *</label>
+          <input type="text" value={form.dependencia} onChange={e => set('dependencia', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-amber-400 outline-none bg-white"
+            placeholder="Ej: PLANEACIÓN" />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">Nombre equipo</label>
+          <input type="text" value={form.equipo} onChange={e => set('equipo', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-amber-400 outline-none bg-white"
+            placeholder="Ej: 1BP2OJ-001" />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">Tipo de equipo</label>
+          <select value={form.tipo} onChange={e => set('tipo', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-amber-400 outline-none bg-white">
+            {TIPOS_EQUIPO_OPCIONES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">IP</label>
+          <input type="text" value={form.ip ?? ''} onChange={e => set('ip', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-amber-400 outline-none bg-white"
+            placeholder="Ej: 172.16.2.10" />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">Serial</label>
+          <input type="text" value={form.serial ?? ''} onChange={e => set('serial', e.target.value)}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-amber-400 outline-none bg-white"
+            placeholder="Serial del equipo" />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 pt-1">
+        <button type="button" onClick={onCancelar}
+          className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 font-medium rounded-lg hover:bg-slate-100 transition">
+          Cancelar
+        </button>
+        <button type="button" onClick={handleSubmit} disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white text-sm font-bold rounded-lg hover:bg-amber-600 transition disabled:opacity-60">
+          <Pencil className="w-4 h-4" />
+          {loading ? 'Guardando...' : 'Guardar cambios'}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ── FIRMA ────────────────────────────────────────────────────────────────────
 function SignaturePad({
@@ -279,7 +560,7 @@ async function generarPDF(ticket: {
 
   Object.entries(ticket.componentes).forEach(([key, val], idx) => {
     const bg = idx % 2 === 0 ? 248 : 255;
-    doc.setFillColor(bg, bg === 248 ? 250 : 255, bg === 248 ? 252 : 255);
+    doc.setFillColor(bg, bg === 248 ? 250 : 252, bg === 248 ? 252 : 255);
     doc.rect(margin, y, tableW, 7, 'F');
     doc.setDrawColor(...C.border); doc.rect(margin, y, tableW, 7, 'S');
     doc.setTextColor(...C.slate); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
@@ -355,6 +636,11 @@ export default function App() {
   const [suggestions, setSuggestions] = useState<Empleado[]>([]);
   const [showList, setShowList] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [noResults, setNoResults] = useState(false);
+  const [showNuevoForm, setShowNuevoForm] = useState(false);
+  const [savingNuevo, setSavingNuevo] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
   const [selectedEmp, setSelectedEmp] = useState<Empleado | null>(null);
   const [tipoEquipo, setTipoEquipo] = useState<TipoEquipo>('');
   const [form, setForm] = useState<FormData>(makeForm());
@@ -372,13 +658,18 @@ export default function App() {
 
   const handleSearch = (v: string) => {
     setSearchTerm(v);
+    setNoResults(false);
+    setShowNuevoForm(false);
     if (searchRef.current) clearTimeout(searchRef.current);
     if (!v.trim()) { setSuggestions([]); setShowList(false); return; }
     searchRef.current = setTimeout(async () => {
       setSearchLoading(true);
       try {
         const r = await fetch(`/api/empleados?q=${encodeURIComponent(v)}`);
-        setSuggestions(await r.json()); setShowList(true);
+        const data = await r.json();
+        setSuggestions(data);
+        setShowList(true);
+        setNoResults(data.length === 0); // ← NUEVO: detectar sin resultados
       } catch { setSuggestions([]); }
       finally { setSearchLoading(false); }
     }, 300);
@@ -387,7 +678,52 @@ export default function App() {
   const selectEmp = (emp: Empleado) => {
     setSelectedEmp(emp);
     setTipoEquipo((emp.tipo as TipoEquipo) || '');
-    setShowList(false); setSearchTerm('');
+    setShowList(false);
+    setSearchTerm('');
+    setNoResults(false);
+    setShowNuevoForm(false);
+  };
+
+  // ── GUARDAR EDICIÓN EMPLEADO ───────────────────────────────────────────────
+  const handleEditarEmpleado = async (data: Empleado) => {
+    setSavingEdit(true);
+    try {
+      const res = await fetch(`/api/empleados/${data.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const updated: Empleado = await res.json();
+      if (!res.ok) throw new Error((updated as any).error || 'Error al actualizar');
+      setSelectedEmp(updated);
+      setTipoEquipo((updated.tipo as TipoEquipo) || '');
+      setShowEditForm(false);
+      alert('Datos del empleado actualizados correctamente');
+    } catch (err: any) {
+      alert('Error al actualizar: ' + err.message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  // ── GUARDAR NUEVO EMPLEADO ─────────────────────────────────────────────────
+  const handleGuardarNuevo = async (data: NuevoEmpleadoForm) => {
+    setSavingNuevo(true);
+    try {
+      const res = await fetch('/api/empleados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, activo: true }),
+      });
+      const nuevoEmp: Empleado = await res.json();
+      if (!res.ok) throw new Error((nuevoEmp as any).error || 'Error al guardar');
+      selectEmp(nuevoEmp);
+      alert(`Empleado "${nuevoEmp.nombre}" registrado correctamente`);
+    } catch (err: any) {
+      alert('Error al registrar empleado: ' + err.message);
+    } finally {
+      setSavingNuevo(false);
+    }
   };
 
   const setComp = (comp: string, field: keyof CompRow, value: string | boolean) => {
@@ -403,6 +739,7 @@ export default function App() {
   const reset = () => {
     setForm(makeForm()); setSelectedEmp(null); setTipoEquipo('');
     setSigs({ tecnico: null, usuario: null }); setLastTicket(null);
+    setNoResults(false); setShowNuevoForm(false); setShowEditForm(false);
   };
 
   const validate = () => {
@@ -590,6 +927,7 @@ export default function App() {
           </div>
         </section>
 
+        {/* ── SECCIÓN USUARIO ─────────────────────────────────────────────── */}
         <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-xs font-bold text-slate-500 mb-4 flex items-center gap-2 uppercase tracking-widest">
             <User className="w-4 h-4 text-indigo-500" /> Seleccionar Usuario
@@ -601,6 +939,7 @@ export default function App() {
               onFocus={() => { if (suggestions.length > 0) setShowList(true); }}
               placeholder="Buscar por nombre, cargo, dependencia o equipo..."
               className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
+
             {showList && (
               <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-72 overflow-y-auto">
                 {searchLoading
@@ -624,48 +963,97 @@ export default function App() {
                         </div>
                       ))}
                     </>
-                    : <p className="p-4 text-sm text-slate-400 text-center">No se encontraron resultados</p>
+                    : (
+                      /* ── SIN RESULTADOS: botón para agregar ── */
+                      <div className="p-4 text-center">
+                        <p className="text-sm text-slate-400 mb-3">
+                          No se encontró <span className="font-bold text-slate-600">"{searchTerm}"</span>
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => { setShowList(false); setShowNuevoForm(true); }}
+                          className="flex items-center gap-2 mx-auto px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition"
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          Agregar nuevo empleado
+                        </button>
+                      </div>
+                    )
                 }
               </div>
             )}
           </div>
 
+          {/* ── FORMULARIO INLINE NUEVO EMPLEADO ─────────────────────────── */}
+          {showNuevoForm && !selectedEmp && (
+            <NuevoEmpleadoModal
+              searchTerm={searchTerm}
+              onGuardar={handleGuardarNuevo}
+              onCancelar={() => { setShowNuevoForm(false); setNoResults(false); }}
+              loading={savingNuevo}
+            />
+          )}
+
           {selectedEmp && (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-9 h-9 bg-indigo-200 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-indigo-700" />
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 bg-indigo-200 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-indigo-700" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm">{selectedEmp.nombre}</p>
+                        <p className="text-xs text-slate-500">{selectedEmp.cargo}</p>
+                      </div>
+                    </div>
+                    {/* Botón editar */}
+                    <button
+                      type="button"
+                      onClick={() => setShowEditForm(v => !v)}
+                      title="Editar datos del empleado"
+                      className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold transition ${showEditForm ? 'bg-amber-100 text-amber-700' : 'bg-white text-slate-500 hover:bg-amber-50 hover:text-amber-600 border border-slate-200'}`}
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Editar
+                    </button>
                   </div>
-                  <div>
-                    <p className="font-bold text-slate-800 text-sm">{selectedEmp.nombre}</p>
-                    <p className="text-xs text-slate-500">{selectedEmp.cargo}</p>
+                  <div className="space-y-1 text-xs text-slate-600">
+                    <p><span className="font-bold text-slate-700">Dependencia:</span> {selectedEmp.dependencia}</p>
+                    <p><span className="font-bold text-slate-700">Equipo:</span> {selectedEmp.equipo}</p>
+                    <p><span className="font-bold text-slate-700">IP:</span> {selectedEmp.ip || '-'}</p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="font-bold text-slate-700">Registrado:</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${selectedEmp.tipo === 'PORTATIL' ? 'bg-blue-100 text-blue-700' : selectedEmp.tipo === 'AMBOS' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'}`}>
+                        {selectedEmp.tipo}
+                      </span>
+                    </div>
                   </div>
+                  <button onClick={() => { setSelectedEmp(null); setTipoEquipo(''); setShowEditForm(false); }}
+                    className="mt-3 text-xs text-indigo-500 hover:text-indigo-700 font-bold">
+                    Cambiar empleado
+                  </button>
                 </div>
-                <div className="space-y-1 text-xs text-slate-600">
-                  <p><span className="font-bold text-slate-700">Dependencia:</span> {selectedEmp.dependencia}</p>
-                  <p><span className="font-bold text-slate-700">Equipo:</span> {selectedEmp.equipo}</p>
-                  <p><span className="font-bold text-slate-700">IP:</span> {selectedEmp.ip || '-'}</p>
-                  <div className="flex items-center gap-2 pt-1">
-                    <span className="font-bold text-slate-700">Registrado:</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${selectedEmp.tipo === 'PORTATIL' ? 'bg-blue-100 text-blue-700' : selectedEmp.tipo === 'AMBOS' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'}`}>
-                      {selectedEmp.tipo}
-                    </span>
-                  </div>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                  <EquipmentTypeSelector value={tipoEquipo} onChange={setTipoEquipo} />
+                  {tipoEquipo && tipoEquipo !== selectedEmp.tipo && (
+                    <p className="mt-3 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      Difiere del tipo registrado ({selectedEmp.tipo})
+                    </p>
+                  )}
                 </div>
-                <button onClick={() => { setSelectedEmp(null); setTipoEquipo(''); }}
-                  className="mt-3 text-xs text-indigo-500 hover:text-indigo-700 font-bold">
-                  Cambiar empleado
-                </button>
               </div>
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                <EquipmentTypeSelector value={tipoEquipo} onChange={setTipoEquipo} />
-                {tipoEquipo && tipoEquipo !== selectedEmp.tipo && (
-                  <p className="mt-3 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                    Difiere del tipo registrado ({selectedEmp.tipo})
-                  </p>
-                )}
-              </div>
+
+              {/* Formulario de edición inline */}
+              {showEditForm && (
+                <EditarEmpleadoModal
+                  empleado={selectedEmp}
+                  onGuardar={handleEditarEmpleado}
+                  onCancelar={() => setShowEditForm(false)}
+                  loading={savingEdit}
+                />
+              )}
             </div>
           )}
         </section>
