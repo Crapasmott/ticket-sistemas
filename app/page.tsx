@@ -652,7 +652,12 @@ export default function App() {
 
   useEffect(() => {
     fetch('/api/tecnicos')
-      .then(r => r.json()).then(setTecnicos).catch(() => setTecnicos([]))
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(data => setTecnicos(Array.isArray(data) ? data : []))
+      .catch(() => setTecnicos([]))
       .finally(() => setLoadingTecs(false));
   }, []);
 
